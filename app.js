@@ -10,70 +10,311 @@ const cars = [
     { id: 8, make: "Porsche", model: "Taycan 4S", year: 2023, price: 105000, mileage: 8000, class: "sedan", cylinders: 0, transmission: "a", drive: "awd", fuel_type: "electricity", highway_mpg: 80, image: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", description: "Електромобіль майбутнього. Батарея Performance Plus. Запас ходу до 500 км на одному заряді." }
 ];
 
-const T={trans:{a:'Автомат',m:'Механіка'},drive:{fwd:'Передній',rwd:'Задній',awd:'Повний'},fuel:{gas:'Бензин',diesel:'Дизель',electricity:'Електро',hybrid:'Гібрид'},cls:{suv:'Позашляховик',sedan:'Седан',coupe:'Купе'}};
-const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
-const money=n=>new Intl.NumberFormat('uk-UA',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n);
-const km=n=>n.toLocaleString('uk-UA')+' км';
-const S={q:'',make:'',fuel:'',trans:'',max:140000,sort:'new',pre:null};
-const sorters={new:(a,b)=>b.year-a.year||a.price-b.price,cheap:(a,b)=>a.price-b.price,exp:(a,b)=>b.price-a.price,km:(a,b)=>a.mileage-b.mileage};
-const makes=[...new Set(cars.map(c=>c.make))];
-const img=c=>`<img src="${c.image}" alt="${c.make} ${c.model}" loading="lazy" onerror="this.remove()">`;
-const card=c=>`<a class="card" href="#/car/${c.id}"><div class="ph">${img(c)}<span class="yr">${c.year}</span></div><div class="cb"><h3>${c.make} ${c.model}</h3><div class="pr">${money(c.price)}</div><ul class="sp"><li>${km(c.mileage)}</li><li>${T.fuel[c.fuel_type]}</li><li>${T.trans[c.transmission]}</li><li>${c.cylinders?c.cylinders+' цил.':'Електро'}</li></ul></div></a>`;
+// Словники перекладу
+const Dictionary = {
+    trans: { a: 'Автомат', m: 'Механіка' },
+    drive: { fwd: 'Передній', rwd: 'Задній', awd: 'Повний' },
+    fuel: { gas: 'Бензин', diesel: 'Дизель', electricity: 'Електро', hybrid: 'Гібрид' },
+    cls: { suv: 'Позашляховик', sedan: 'Седан', coupe: 'Купе' }
+};
 
-// Головна: швидкий підбір
-$('#q-make').innerHTML='<option value="">Усі марки</option>'+makes.map(m=>`<option>${m}</option>`).join('');
-const quickCount=()=>{const m=$('#q-make').value,x=+$('#q-max').value||1e9;$('#q-count').textContent=cars.filter(c=>(!m||c.make===m)&&c.price<=x).length};
-$('#q-make').onchange=$('#q-max').onchange=quickCount;
-$('#quick').onsubmit=e=>{e.preventDefault();Object.assign(S,{make:$('#q-make').value,max:+$('#q-max').value||140000,q:'',fuel:'',trans:''});location.hash='#/catalog'};
-$('#featured').innerHTML=cars.filter(c=>[1,7,8].includes(c.id)).map(card).join('');
+// Зручні функції для роботи з DOM
+const $ = selector => document.querySelector(selector);
+const $$ = selector => document.querySelectorAll(selector);
 
-// Каталог
-function renderCatalog(){
-  const list=cars.filter(c=>(!S.make||c.make===S.make)&&(!S.fuel||c.fuel_type===S.fuel)&&(!S.trans||c.transmission===S.trans)&&c.price<=S.max&&(c.make+' '+c.model).toLowerCase().includes(S.q)).sort(sorters[S.sort]);
-  $('#count').textContent=list.length;$('#f-max-o').textContent=money(S.max);
-  $('#chips').innerHTML=['',...makes].map(m=>`<button class="${S.make===m?'on':''}" data-m="${m}">${m||'Усі марки'}</button>`).join('');
-  $('#grid').innerHTML=list.length?list.map(card).join(''):'<div class="empty"><h3>Нічого не знайдено</h3><p>Збільште бюджет або приберіть частину фільтрів.</p><button class="btn" id="reset">Скинути фільтри</button></div>';
+// Функції форматування
+const formatMoney = num => new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(num);
+const formatKm = num => num.toLocaleString('uk-UA') + ' км';
+
+// Глобальний стан фільтрів
+const State = {
+    query: '',
+    make: '',
+    fuel: '',
+    trans: '',
+    maxPrice: 140000,
+    sort: 'new',
+    prefillMessage: null
+};
+
+// Функції сортування
+const sorters = {
+    new: (a, b) => b.year - a.year || a.price - b.price,
+    cheap: (a, b) => a.price - b.price,
+    exp: (a, b) => b.price - a.price,
+    km: (a, b) => a.mileage - b.mileage
+};
+
+// Унікальні марки авто для селекта
+const uniqueMakes = [...new Set(cars.map(car => car.make))];
+
+// Генерація HTML для картинки та картки
+const generateImageHTML = car => `<img src="${car.image}" alt="${car.make} ${car.model}" loading="lazy" onerror="this.remove()">`;
+
+const generateCardHTML = car => `
+    <a class="card" href="#/car/${car.id}">
+        <div class="ph">
+            ${generateImageHTML(car)}
+            <span class="yr">${car.year}</span>
+        </div>
+        <div class="cb">
+            <h3>${car.make} ${car.model}</h3>
+            <div class="pr">${formatMoney(car.price)}</div>
+            <ul class="sp">
+                <li>${formatKm(car.mileage)}</li>
+                <li>${Dictionary.fuel[car.fuel_type]}</li>
+                <li>${Dictionary.trans[car.transmission]}</li>
+                <li>${car.cylinders ? car.cylinders + ' цил.' : 'Електро'}</li>
+            </ul>
+        </div>
+    </a>
+`;
+
+// --- ЛОГІКА ГОЛОВНОЇ СТОРІНКИ ---
+$('#q-make').innerHTML = '<option value="">Усі марки</option>' + uniqueMakes.map(make => `<option>${make}</option>`).join('');
+
+const updateQuickCount = () => {
+    const selectedMake = $('#q-make').value;
+    const maxBudget = +$('#q-max').value || 1000000000;
+    const count = cars.filter(car => (!selectedMake || car.make === selectedMake) && car.price <= maxBudget).length;
+    $('#q-count').textContent = count;
+};
+
+$('#q-make').addEventListener('change', updateQuickCount);
+$('#q-max').addEventListener('change', updateQuickCount);
+
+$('#quick').addEventListener('submit', event => {
+    event.preventDefault();
+    State.make = $('#q-make').value;
+    State.maxPrice = +$('#q-max').value || 140000;
+    State.query = '';
+    State.fuel = '';
+    State.trans = '';
+    location.hash = '#/catalog';
+});
+
+// Виводимо обрані авто на головній
+$('#featured').innerHTML = cars.filter(car => [1, 7, 8].includes(car.id)).map(generateCardHTML).join('');
+
+// --- ЛОГІКА КАТАЛОГУ ---
+function renderCatalog() {
+    const filteredCars = cars.filter(car => {
+        const matchMake = !State.make || car.make === State.make;
+        const matchFuel = !State.fuel || car.fuel_type === State.fuel;
+        const matchTrans = !State.trans || car.transmission === State.trans;
+        const matchPrice = car.price <= State.maxPrice;
+        const searchString = (car.make + ' ' + car.model).toLowerCase();
+        const matchQuery = searchString.includes(State.query);
+
+        return matchMake && matchFuel && matchTrans && matchPrice && matchQuery;
+    }).sort(sorters[State.sort]);
+
+    $('#count').textContent = filteredCars.length;
+    $('#f-max-o').textContent = formatMoney(State.maxPrice);
+    
+    const allMakesOptions = ['', ...uniqueMakes];
+    $('#chips').innerHTML = allMakesOptions.map(make => 
+        `<button class="${State.make === make ? 'on' : ''}" data-m="${make}">${make || 'Усі марки'}</button>`
+    ).join('');
+
+    if (filteredCars.length > 0) {
+        $('#grid').innerHTML = filteredCars.map(generateCardHTML).join('');
+    } else {
+        $('#grid').innerHTML = `
+            <div class="empty">
+                <h3>Нічого не знайдено</h3>
+                <p>Збільште бюджет або приберіть частину фільтрів.</p>
+                <button class="btn" id="reset">Скинути фільтри</button>
+            </div>
+        `;
+    }
 }
-const bind=(id,k,num)=>$(id).addEventListener('input',e=>{S[k]=num?+e.target.value:e.target.value.trim().toLowerCase();renderCatalog()});
-bind('#f-q','q');bind('#f-max','max',1);
-['fuel','trans','sort'].forEach(k=>$('#f-'+k).addEventListener('change',e=>{S[k]=e.target.value;renderCatalog()}));
-$('#chips').onclick=e=>{if(e.target.dataset.m!==undefined){S.make=e.target.dataset.m;renderCatalog()}};
-$('#grid').onclick=e=>{if(e.target.id==='reset'){Object.assign(S,{q:'',make:'',fuel:'',trans:'',max:140000});syncCatalog()}};
-function syncCatalog(){$('#f-q').value=S.q;$('#f-fuel').value=S.fuel;$('#f-trans').value=S.trans;$('#f-max').value=S.max;$('#f-sort').value=S.sort;renderCatalog()}
 
-// Сторінка авто + кредитний калькулятор (ставка умовна)
-let cur;
-function showCar(id){
-  cur=cars.find(c=>c.id===id);if(!cur){location.hash='#/catalog';return}
-  const c=cur,l=c.fuel_type==='electricity'?'—':(235.215/c.highway_mpg).toFixed(1)+' л/100 км';
-  $('#p-car').innerHTML=`<a class="back" href="#/catalog">← До каталогу</a><div class="car"><div class="ph">${img(c)}<span class="yr">${c.year}</span></div><div>
-  <h1>${c.make} ${c.model}</h1><p class="cl">${T.cls[c.class]}</p><div class="big">${money(c.price)}</div><p class="ds">${c.description}</p>
-  <div class="spec"><div><small>Пробіг</small><b>${km(c.mileage)}</b></div><div><small>Пальне</small><b>${T.fuel[c.fuel_type]}</b></div><div><small>Коробка</small><b>${T.trans[c.transmission]}</b></div><div><small>Привід</small><b>${T.drive[c.drive]}</b></div><div><small>Двигун</small><b>${c.cylinders?c.cylinders+' циліндрів':'Електро'}</b></div><div><small>Витрата в трасі</small><b>${l}</b></div></div>
-  <div class="calc"><h3>Орієнтовний платіж у кредит</h3>
-  <label>Перший внесок <span id="dpo"></span></label><input type="range" id="dp" min="0" max="70" step="5" value="30">
-  <label>Термін <span id="tmo"></span></label><input type="range" id="tm" min="12" max="84" step="12" value="48">
-  <div class="m" id="mo"></div><small>Розрахунок умовний, ставка 12% річних. Точні умови підбере менеджер.</small></div>
-  <button class="btn" id="req">Записатись на тест-драйв</button></div></div>`;
-  $('#dp').oninput=$('#tm').oninput=calc;calc();
-  $('#req').onclick=()=>{S.pre=`Цікавить ${c.make} ${c.model}, ${c.year} р. Хочу записатись на тест-драйв.`;location.hash='#/contacts'};
-}
-function calc(){
-  const dp=+$('#dp').value,n=+$('#tm').value,r=.12/12,p=cur.price*(1-dp/100);
-  $('#dpo').textContent=`${dp}% (${money(cur.price*dp/100)})`;$('#tmo').textContent=n+' міс.';
-  $('#mo').textContent=money(p*r/(1-Math.pow(1+r,-n)))+' / міс.';
+// Прив'язка подій для фільтрів
+const bindFilterInput = (id, stateKey, isNumber) => {
+    $(id).addEventListener('input', event => {
+        State[stateKey] = isNumber ? +event.target.value : event.target.value.trim().toLowerCase();
+        renderCatalog();
+    });
+};
+
+bindFilterInput('#f-q', 'query', false);
+bindFilterInput('#f-max', 'maxPrice', true);
+
+['fuel', 'trans', 'sort'].forEach(key => {
+    $(`#f-${key}`).addEventListener('change', event => {
+        State[key] = event.target.value;
+        renderCatalog();
+    });
+});
+
+$('#chips').addEventListener('click', event => {
+    if (event.target.dataset.m !== undefined) {
+        State.make = event.target.dataset.m;
+        renderCatalog();
+    }
+});
+
+$('#grid').addEventListener('click', event => {
+    if (event.target.id === 'reset') {
+        State.query = '';
+        State.make = '';
+        State.fuel = '';
+        State.trans = '';
+        State.maxPrice = 140000;
+        syncCatalogUI();
+    }
+});
+
+function syncCatalogUI() {
+    $('#f-q').value = State.query;
+    $('#f-fuel').value = State.fuel;
+    $('#f-trans').value = State.trans;
+    $('#f-max').value = State.maxPrice;
+    $('#f-sort').value = State.sort;
+    renderCatalog();
 }
 
-// Контакти
-function prefill(){if(S.pre){$('#l-msg').value=S.pre;$('#l-sub').value='Запис на тест-драйв';S.pre=null}}
-$('#lead').onsubmit=e=>{e.preventDefault();const n=e.target.n.value.trim();
-  e.target.innerHTML=`<div class="thanks"><h3>Дякуємо, ${n.replace(/</g,'&lt;')}!</h3><p>Заявку отримано. Менеджер зв’яжеться з вами найближчим часом.</p></div>`};
+// --- СТОРІНКА АВТО ТА КАЛЬКУЛЯТОР ---
+let currentCar;
 
-// Маршрутизація за hash: працюють кнопка «Назад» і прямі посилання
-function route(){
-  const [p,id]=(location.hash.slice(2)||'home').split('/'),pg=['home','catalog','car','contacts'].includes(p)?p:'home';
-  $$('.page').forEach(s=>s.hidden=s.id!=='p-'+pg);
-  $$('.top nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===(pg==='car'?'catalog':pg)));
-  if(pg==='catalog')syncCatalog();if(pg==='car')showCar(+id);if(pg==='contacts')prefill();
-  window.scrollTo(0,0);
+function showCarDetails(id) {
+    currentCar = cars.find(car => car.id === id);
+    
+    if (!currentCar) {
+        location.hash = '#/catalog';
+        return;
+    }
+    
+    const car = currentCar;
+    const litersPer100km = car.fuel_type === 'electricity' ? '—' : (235.215 / car.highway_mpg).toFixed(1) + ' л/100 км';
+    
+    $('#p-car').innerHTML = `
+        <a class="back" href="#/catalog">← До каталогу</a>
+        <div class="car">
+            <div class="ph">
+                ${generateImageHTML(car)}
+                <span class="yr">${car.year}</span>
+            </div>
+            <div>
+                <h1>${car.make} ${car.model}</h1>
+                <p class="cl">${Dictionary.cls[car.class]}</p>
+                <div class="big">${formatMoney(car.price)}</div>
+                <p class="ds">${car.description}</p>
+                
+                <div class="spec">
+                    <div><small>Пробіг</small><b>${formatKm(car.mileage)}</b></div>
+                    <div><small>Пальне</small><b>${Dictionary.fuel[car.fuel_type]}</b></div>
+                    <div><small>Коробка</small><b>${Dictionary.trans[car.transmission]}</b></div>
+                    <div><small>Привід</small><b>${Dictionary.drive[car.drive]}</b></div>
+                    <div><small>Двигун</small><b>${car.cylinders ? car.cylinders + ' циліндрів' : 'Електро'}</b></div>
+                    <div><small>Витрата в трасі</small><b>${litersPer100km}</b></div>
+                </div>
+                
+                <div class="calc">
+                    <h3>Орієнтовний платіж у кредит</h3>
+                    <label>Перший внесок <span id="dpo"></span></label>
+                    <input type="range" id="dp" min="0" max="70" step="5" value="30">
+                    <label>Термін <span id="tmo"></span></label>
+                    <input type="range" id="tm" min="12" max="84" step="12" value="48">
+                    <div class="m" id="mo"></div>
+                    <small>Розрахунок умовний, ставка 12% річних. Точні умови підбере менеджер.</small>
+                </div>
+                
+                <button class="btn" id="req">Записатись на тест-драйв</button>
+            </div>
+        </div>
+    `;
+    
+    $('#dp').addEventListener('input', calculateLoan);
+    $('#tm').addEventListener('input', calculateLoan);
+    calculateLoan();
+    
+    $('#req').addEventListener('click', () => {
+        State.prefillMessage = `Цікавить ${car.make} ${car.model}, ${car.year} р. Хочу записатись на тест-драйв.`;
+        location.hash = '#/contacts';
+    });
 }
-addEventListener('hashchange',route);route();
+
+function calculateLoan() {
+    if (!currentCar) return;
+    const downPaymentPercent = +$('#dp').value;
+    const months = +$('#tm').value;
+    const monthlyRate = 0.12 / 12; // 12% річних
+    const loanAmount = currentCar.price * (1 - downPaymentPercent / 100);
+    const downPaymentAmount = currentCar.price * downPaymentPercent / 100;
+    
+    $('#dpo').textContent = `${downPaymentPercent}% (${formatMoney(downPaymentAmount)})`;
+    $('#tmo').textContent = months + ' міс.';
+    
+    const monthlyPayment = loanAmount * monthlyRate / (1 - Math.pow(1 + monthlyRate, -months));
+    $('#mo').textContent = formatMoney(monthlyPayment) + ' / міс.';
+}
+
+// --- СТОРІНКА КОНТАКТІВ ---
+function prefillContactForm() {
+    if (State.prefillMessage) {
+        $('#l-msg').value = State.prefillMessage;
+        $('#l-sub').value = 'Запис на тест-драйв';
+        State.prefillMessage = null;
+    }
+}
+
+$('#lead').addEventListener('submit', event => {
+    event.preventDefault();
+    const name = event.target.n.value.trim();
+    event.target.innerHTML = `
+        <div class="thanks">
+            <h3>Дякуємо, ${name.replace(/</g, '&lt;')}!</h3>
+            <p>Заявку отримано. Менеджер зв’яжеться з вами найближчим часом.</p>
+        </div>
+    `;
+});
+
+// --- МАРШРУТИЗАЦІЯ (SPA ROUTING) ---
+function route() {
+    const hashParts = (location.hash.slice(2) || 'home').split('/');
+    const pageId = hashParts[0];
+    const itemId = hashParts[1];
+    
+    const validPages = ['home', 'catalog', 'car', 'contacts'];
+    const activePage = validPages.includes(pageId) ? pageId : 'home';
+    
+    // Показуємо потрібну секцію
+    $$('.page').forEach(section => {
+        section.hidden = section.id !== 'p-' + activePage;
+    });
+    
+    // Оновлюємо активне посилання в меню
+    $$('.top nav a').forEach(link => {
+        const linkRoute = link.dataset.r;
+        const targetRoute = activePage === 'car' ? 'catalog' : activePage;
+        link.classList.toggle('on', linkRoute === targetRoute);
+    });
+    
+    if (activePage === 'catalog') syncCatalogUI();
+    if (activePage === 'car') showCarDetails(+itemId);
+    if (activePage === 'contacts') prefillContactForm();
+    
+    window.scrollTo(0, 0);
+}
+
+window.addEventListener('hashchange', route);
+route();
+
+// --- МОБІЛЬНЕ БУРГЕР МЕНЮ ---
+const burgerBtn = document.getElementById('burger');
+const navMenu = document.getElementById('nav');
+
+burgerBtn.addEventListener('click', () => {
+    burgerBtn.classList.toggle('open');
+    navMenu.classList.toggle('open');
+});
+
+// Закриваємо меню при кліку на будь-яке посилання
+$$('#nav a').forEach(link => {
+    link.addEventListener('click', () => {
+        burgerBtn.classList.remove('open');
+        navMenu.classList.remove('open');
+    });
+});
