@@ -16,10 +16,9 @@
   display: none !important;
 }
 
-html, body {
+html {
   scroll-behavior: smooth;
-  /* Фікс горизонтального скролу на мобілках */
-  overflow-x: hidden; 
+  /* Видалили overflow-x: hidden, який ламав шапку */
 }
 
 body {
@@ -27,6 +26,7 @@ body {
   font: 400 16px/1.6 Manrope, system-ui, sans-serif;
   color: var(--ink);
   background: var(--pearl);
+  overflow-x: clip; /* Правильний спосіб прибрати гориз. скрол без поломки sticky */
 }
 
 h1, h2, h3 {
@@ -139,8 +139,9 @@ img {
   display: flex;
   align-items: flex-end;
   color: #fff;
+  /* Додали слово fixed після center/cover */
   background: linear-gradient(180deg, rgba(12, 18, 32, 0.25), rgba(12, 18, 32, 0.88)), 
-              url(https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&w=1920&q=80) center/cover, 
+              url(https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&w=1920&q=80) center/cover fixed, 
               #16203a;
 }
 
