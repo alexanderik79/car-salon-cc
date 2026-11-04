@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AutoSale — преміальні авто з Європи</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="#/">Auto<b>Sale</b></a>
+  <nav>
+    <a href="#/" data-r="home">Головна</a>
+    <a href="#/catalog" data-r="catalog">Каталог</a>
+    <a href="#/contacts" data-r="contacts">Контакти</a>
+  </nav>
+  <a class="tel" href="tel:+380441234567">+38 (044) 123-45-67</a>
+</header>
+
+<main>
+<section class="page" id="p-home">
+  <div class="hero">
+    <div class="hero-in">
+      <h1><span>Преміальні авто з Європи</span> <span>з чесною історією</span></h1>
+      <p>Прозорі ціни, 150 етапів технічної перевірки та 12 місяців гарантії на двигун і КПП.</p>
+      <form class="quick" id="quick">
+        <label>Марка<select id="q-make"></select></label>
+        <label>Бюджет до<select id="q-max">
+          <option value="">Будь-який</option><option value="40000">$40 000</option>
+          <option value="80000">$80 000</option><option value="120000">$120 000</option></select></label>
+        <button>Показати <span id="q-count">8</span> авто</button>
+      </form>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="head"><h2>Зараз в салоні</h2><a href="#/catalog">Увесь каталог</a></div>
+    <div class="grid" id="featured"></div>
+  </div>
+  <div class="why"><div class="wrap">
+    <h2>Чому нам довіряють</h2>
+    <div class="cols">
+      <div><h3>Беремо кожне п’яте авто</h3><p>Ми відхиляємо 8 із 10 автомобілів. У продаж потрапляють лише авто без ДТП, з прозорою історією обслуговування та оригінальним пробігом.</p></div>
+      <div><h3>Усе під ключ</h3><p>Переоформлення в сервісному центрі МВС, страхування, кредит або лізинг. Ви приїжджаєте, п’єте каву і їдете на своєму новому авто.</p></div>
+      <div><h3>Власний сервіс</h3><p>12 місяців гарантії на двигун і КПП, бо ми самі обслуговуємо кожне авто перед продажем.</p></div>
+    </div>
+  </div></div>
+</section>
+
+<section class="page wrap" id="p-catalog" hidden>
+  <h1>Каталог авто</h1>
+  <div class="bar">
+    <input id="f-q" type="search" placeholder="Марка або модель">
+    <select id="f-fuel"><option value="">Будь-яке пальне</option><option value="gas">Бензин</option><option value="diesel">Дизель</option><option value="hybrid">Гібрид</option><option value="electricity">Електро</option></select>
+    <select id="f-trans"><option value="">Будь-яка КПП</option><option value="a">Автомат</option><option value="m">Механіка</option></select>
+    <label class="rng">Ціна до <output id="f-max-o"></output><input type="range" id="f-max" min="20000" max="140000" step="5000" value="140000"></label>
+    <select id="f-sort"><option value="new">Спочатку новіші</option><option value="cheap">Спочатку дешевші</option><option value="exp">Спочатку дорожчі</option><option value="km">Менший пробіг</option></select>
+  </div>
+  <div class="chips" id="chips"></div>
+  <p class="count">Знайдено: <b id="count">0</b></p>
+  <div class="grid" id="grid"></div>
+</section>
+
+<section class="page wrap" id="p-car" hidden></section>
+
+<section class="page wrap" id="p-contacts" hidden>
+  <h1>Контакти</h1>
+  <div class="contact">
+    <aside>
+      <h3>AutoSale, ТОВ</h3>
+      <p>вул. Автомобільна, 30<br>Київ, 03150</p>
+      <p><a href="tel:+380441234567">+38 (044) 123-45-67</a><br><a href="mailto:sales@autosale.com.ua">sales@autosale.com.ua</a></p>
+      <p><a href="#">Telegram</a> &nbsp; <a href="#">Viber</a></p>
+      <dl><dt>Пн–Пт</dt><dd>09:00–19:00</dd><dt>Субота</dt><dd>10:00–16:00</dd><dt>Неділя</dt><dd>Вихідний</dd></dl>
+      <iframe title="Карта" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=30.49%2C50.43%2C30.56%2C50.47&layer=mapnik&marker=50.4501%2C30.5234"></iframe>
+    </aside>
+    <form id="lead">
+      <h3>Залишити заявку</h3>
+      <div class="two"><label>Ім’я<input name="n" required autocomplete="name"></label>
+      <label>Телефон<input name="t" type="tel" required autocomplete="tel" placeholder="+380"></label></div>
+      <label>Тема<select id="l-sub"><option>Консультація щодо авто</option><option>Запис на тест-драйв</option><option>Кредит або лізинг</option><option>Інше</option></select></label>
+      <label>Повідомлення<textarea id="l-msg" rows="4" required></textarea></label>
+      <button class="btn">Надіслати заявку</button>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">© 2026 AutoSale. Усі права захищені.</div></footer>
+<script src="app.js"></script>
+</body>
+</html>
