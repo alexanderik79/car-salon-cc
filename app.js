@@ -1,14 +1,11 @@
-// БАЗА ДАНИХ (ціни в USD)
-const cars = [
-    { id: 1, make: "BMW", model: "X5 M50d", year: 2023, price: 95000, mileage: 12000, class: "suv", cylinders: 6, transmission: "a", drive: "awd", fuel_type: "diesel", highway_mpg: 30, image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", description: "Спортивний кросовер у топовій комплектації M-пакет. Ідеальний стан, один власник. Лазерні фари, пневмопідвіска, панорамний дах." },
-    { id: 2, make: "BMW", model: "320i", year: 2021, price: 34500, mileage: 45000, class: "sedan", cylinders: 4, transmission: "a", drive: "rwd", fuel_type: "gas", highway_mpg: 36, image: "https://images.unsplash.com/photo-1556189250-72ba954cfc2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", description: "Надійний седан бізнес-класу. Обслуговувався тільки на офіційному сервісі. Apple CarPlay, камера заднього виду." },
-    { id: 3, make: "Audi", model: "Q7 S-Line", year: 2022, price: 78000, mileage: 38000, class: "suv", cylinders: 6, transmission: "a", drive: "awd", fuel_type: "diesel", highway_mpg: 28, image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", description: "Великий сімейний позашляховик на 7 місць. Матричні фари, доводчики дверей, преміум акустика Bang & Olufsen." },
-    { id: 4, make: "Audi", model: "A4", year: 2020, price: 25000, mileage: 98000, class: "sedan", cylinders: 4, transmission: "a", drive: "fwd", fuel_type: "gas", highway_mpg: 34, image: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", description: "Економічний автомобіль для міста. Стан сів і поїхав. Нова літня гума в подарунок." },
-    { id: 5, make: "Toyota", model: "Camry Hybrid", year: 2024, price: 42000, mileage: 1500, class: "sedan", cylinders: 4, transmission: "a", drive: "fwd", fuel_type: "hybrid", highway_mpg: 47, image: "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", description: "Абсолютно нове авто, на гарантії до 2029 року. Дуже економна витрата пального в місті." },
-    { id: 6, make: "Toyota", model: "Land Cruiser 300", year: 2023, price: 110000, mileage: 18000, class: "suv", cylinders: 6, transmission: "a", drive: "awd", fuel_type: "diesel", highway_mpg: 20, image: "https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", description: "Легендарна надійність. Броньована плівка по всьому кузову, максимальна комплектація Executive Lounge." },
-    { id: 7, make: "Porsche", model: "911 Carrera", year: 2022, price: 135000, mileage: 22000, class: "coupe", cylinders: 6, transmission: "a", drive: "rwd", fuel_type: "gas", highway_mpg: 24, image: "https://images.unsplash.com/photo-1503376760302-8fac2a829e1c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", description: "Автомобіль вихідного дня. Зберігався виключно в теплому паркінгу. Спортивний вихлоп, карбонові вставки." },
-    { id: 8, make: "Porsche", model: "Taycan 4S", year: 2023, price: 105000, mileage: 8000, class: "sedan", cylinders: 0, transmission: "a", drive: "awd", fuel_type: "electricity", highway_mpg: 80, image: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", description: "Електромобіль майбутнього. Батарея Performance Plus. Запас ходу до 500 км на одному заряді." }
-];
+// Логика слайдера
+let currentSlide = 0;
+window.moveSlide = function(step) {
+    if (!currentCar || !currentCar.images) return;
+    const total = currentCar.images.length;
+    currentSlide = (currentSlide + step + total) % total;
+    document.getElementById('slider-tracks').style.transform = `translateX(-${currentSlide * 100}%)`;
+};
 
 // Словники перекладу
 const Dictionary = {
@@ -49,7 +46,7 @@ const sorters = {
 const uniqueMakes = [...new Set(cars.map(car => car.make))];
 
 // Генерація HTML для картинки та картки
-const generateImageHTML = car => `<img src="${car.image}" alt="${car.make} ${car.model}" loading="lazy" onerror="this.remove()">`;
+const generateImageHTML = car => `<img src="${car.images[0]}" alt="${car.make} ${car.model}" loading="lazy" onerror="this.onerror=null; this.src=fallbackImage;">`;
 
 const generateCardHTML = car => `
     <a class="card" href="#/car/${car.id}">
@@ -186,14 +183,20 @@ function showCarDetails(id) {
         return;
     }
     
+    currentSlide = 0; // Сбрасываем слайдер при открытии новой машины
+    
     const car = currentCar;
     const litersPer100km = car.fuel_type === 'electricity' ? '—' : (235.215 / car.highway_mpg).toFixed(1) + ' л/100 км';
     
     $('#p-car').innerHTML = `
         <a class="back" href="#/catalog">← До каталогу</a>
         <div class="car">
-            <div class="ph">
-                ${generateImageHTML(car)}
+            <div class="ph slider">
+                <div class="slides" id="slider-tracks">
+                    ${car.images.map(img => `<img src="${img}" alt="${car.make} ${car.model}" onerror="this.onerror=null; this.src=fallbackImage;">`).join('')}
+                </div>
+                <button class="sl-btn prev" onclick="moveSlide(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="sl-btn next" onclick="moveSlide(1)"><i class="fa-solid fa-chevron-right"></i></button>
                 <span class="yr">${car.year}</span>
             </div>
             <div>
