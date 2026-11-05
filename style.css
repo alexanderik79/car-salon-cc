@@ -577,6 +577,6 @@ footer .wrap { padding: 24px 20px; font-size: 14px; }
 }
 
 .fa-solid {
-    color: #4285f4; /* Фирменный синий цвет */
+    color: var(--blue);
     margin-right: 6px;
 }
