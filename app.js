@@ -61,10 +61,10 @@ const generateCardHTML = car => `
             <h3>${car.make} ${car.model}</h3>
             <div class="pr">${formatMoney(car.price)}</div>
             <ul class="sp">
-                <li>${formatKm(car.mileage)}</li>
-                <li>${Dictionary.fuel[car.fuel_type]}</li>
-                <li>${Dictionary.trans[car.transmission]}</li>
-                <li>${car.cylinders ? car.cylinders + ' цил.' : 'Електро'}</li>
+                <li><i class="fa-solid fa-gauge-high"></i> ${formatKm(car.mileage)}</li>
+                <li><i class="fa-solid fa-gas-pump"></i> ${Dictionary.fuel[car.fuel_type]}</li>
+                <li><i class="fa-solid fa-gear"></i> ${Dictionary.trans[car.transmission]}</li>
+                <li><i class="fa-solid ${car.cylinders ? 'fa-wrench' : 'fa-bolt'}"></i> ${car.cylinders ? car.cylinders + ' цил.' : 'Електро'}</li>
             </ul>
         </div>
     </a>
@@ -203,12 +203,12 @@ function showCarDetails(id) {
                 <p class="ds">${car.description}</p>
                 
                 <div class="spec">
-                    <div><small>Пробіг</small><b>${formatKm(car.mileage)}</b></div>
-                    <div><small>Пальне</small><b>${Dictionary.fuel[car.fuel_type]}</b></div>
-                    <div><small>Коробка</small><b>${Dictionary.trans[car.transmission]}</b></div>
-                    <div><small>Привід</small><b>${Dictionary.drive[car.drive]}</b></div>
-                    <div><small>Двигун</small><b>${car.cylinders ? car.cylinders + ' циліндрів' : 'Електро'}</b></div>
-                    <div><small>Витрата в трасі</small><b>${litersPer100km}</b></div>
+                    <div><small>ПРОБІГ</small><b><i class="fa-solid fa-gauge-high"></i> ${formatKm(car.mileage)}</b></div>
+                    <div><small>ПАЛЬНЕ</small><b><i class="fa-solid fa-gas-pump"></i> ${Dictionary.fuel[car.fuel_type]}</b></div>
+                    <div><small>КОРОБКА</small><b><i class="fa-solid fa-gear"></i> ${Dictionary.trans[car.transmission]}</b></div>
+                    <div><small>ПРИВІД</small><b><i class="fa-solid fa-gears"></i> ${Dictionary.drive[car.drive]}</b></div>
+                    <div><small>ДВИГУН</small><b><i class="fa-solid ${car.cylinders ? 'fa-wrench' : 'fa-bolt'}"></i> ${car.cylinders ? car.cylinders + ' циліндрів' : 'Електро'}</b></div>
+                    <div><small>ВИТРАТА В ТРАСІ</small><b><i class="fa-solid fa-road"></i> ${litersPer100km}</b></div>
                 </div>
                 
                 <div class="calc">

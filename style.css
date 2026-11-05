@@ -575,3 +575,8 @@ footer .wrap { padding: 24px 20px; font-size: 14px; }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+.fa-solid {
+    color: #4285f4; /* Фирменный синий цвет */
+    margin-right: 6px;
+}
