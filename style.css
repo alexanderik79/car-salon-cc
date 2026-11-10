@@ -139,11 +139,11 @@ img {
   display: flex;
   align-items: flex-end;
   color: #fff;
-  /* Додали слово fixed після center/cover */
   background: linear-gradient(180deg, rgba(12, 18, 32, 0.25), rgba(12, 18, 32, 0.88)), 
-              url(https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&w=1920&q=80) center/cover fixed, 
+              url(https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=1920&q=80) center/cover, 
               #16203a;
 }
+
 
 .hero-in {
   max-width: 1180px;
@@ -566,11 +566,20 @@ footer .wrap { padding: 24px 20px; font-size: 14px; }
     padding: 12px;
     font-size: 18px;
   }
+
+
   
   .burger.open span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
   .burger.open span:nth-child(2) { opacity: 0; }
   .burger.open span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
 }
+
+  /* Параллакс ТІЛЬКИ для комп'ютерів (де є мишка) */
+  @media (hover: hover) and (pointer: fine) {
+    .hero {
+      background-attachment: fixed;
+    }
+  }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
